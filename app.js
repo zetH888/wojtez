@@ -121,29 +121,33 @@ const DebugControl = ({ onToggleDebug }) => (
 const CogitatorDebugConsole = ({ monitoringData, isVisible, eventLog, onExportLogs }) => {
     if (!isVisible) return null;
     return (
-        <div className="debug-window" aria-hidden="true" style={{ pointerEvents: 'auto' }}>
-            <div className="debug-title">Cogitator Debug Console (Live 5Hz)</div>
-            
-            <div className="debug-section">System State</div>
-            {Object.entries(monitoringData).map(([dataKey, dataValue]) => (
-                <div key={dataKey} className="debug-item">
-                    <span className="debug-label">{dataKey}:</span> {JSON.stringify(dataValue)}
-                </div>
-            ))}
-
-            <div className="debug-section" style={{ marginTop: '10px', borderTop: '1px solid #444' }}>Recent Events</div>
-            <div style={{ maxHeight: '100px', overflowY: 'auto', fontSize: '10px', color: '#888' }}>
-                {eventLog.slice(-5).map((log, i) => (
-                    <div key={i}>[{new Date(log.ts).toLocaleTimeString()}] {log.msg}</div>
-                ))}
+        <div className="debug-window" aria-hidden="true">
+            <div className="debug-header flex justify-between items-center">
+                <div className="debug-title">Cogitator Debug Console (Live 3Hz)</div>
+                <button onClick={onExportLogs} className="debug-export-btn">Export</button>
             </div>
+            
+            <div className="debug-content scrollbar-custom">
+                <div className="debug-section">System Parameters</div>
+                <div className="grid grid-cols-1 gap-1">
+                    {Object.entries(monitoringData).map(([dataKey, dataValue]) => (
+                        <div key={dataKey} className="debug-item flex justify-between">
+                            <span className="debug-label">{dataKey}:</span> 
+                            <span className="debug-value">{typeof dataValue === 'object' ? 'OBJ' : String(dataValue)}</span>
+                        </div>
+                    ))}
+                </div>
 
-            <button 
-                onClick={onExportLogs}
-                className="text-[10px] mt-2 text-gold border border-gold/30 px-2 py-1 hover:bg-gold/10 w-full"
-            >
-                Export Datacore Logs (.txt)
-            </button>
+                <div className="debug-section mt-4">Event Datastream</div>
+                <div className="debug-log-container">
+                    {eventLog.slice(-10).map((log, i) => (
+                        <div key={i} className="debug-log-entry">
+                            <span className="text-gold/50 mr-2">[{new Date(log.ts).toLocaleTimeString()}]</span>
+                            {log.msg}
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };
@@ -228,13 +232,13 @@ const FactionRouletteApp = () => {
         URL.revokeObjectURL(url);
     }, [eventLog]);
 
-    // Live Debugger 5Hz Refresh
+    // Live Debugger 3Hz Refresh
     useEffect(() => {
         if (!isDebugVisible) return;
         const interval = setInterval(() => {
             // Trigger a re-sync of monitoring data
             setCogitatorMonitoringData(prev => ({ ...prev, lastPulse: Date.now() }));
-        }, 200); // 5Hz
+        }, 333); // 3Hz
         return () => clearInterval(interval);
     }, [isDebugVisible]);
 
@@ -475,6 +479,25 @@ const FactionRouletteApp = () => {
             setGameState('spinning');
             setIsMechanicalRitualActive(true);
             
+            // BUG FIX: Randomly select one of fortune_wheel_x sounds for each spin
+            const wheelSounds = [
+                'sounds/fortune_wheel_1.mp3',
+                'sounds/fortune_wheel_2.mp3',
+                'sounds/fortune_wheel_3.mp3'
+            ];
+            const randomWheelSound = wheelSounds[Math.floor(Math.random() * wheelSounds.length)];
+            
+            // Create a fresh audio instance for this spin to avoid conflicts
+            const spinAudio = new Audio(randomWheelSound);
+            spinAudio.volume = 0.8; // Set volume between 0.7-0.9
+            spinAudio.play().catch(e => {
+                addLog(`Vox Error: Could not play spin sound - ${e.message}`);
+                console.warn("Audio play blocked:", e);
+            });
+            
+            // Store reference to stop it later if needed
+            audioRefs.current.spin = spinAudio;
+            
             const winningIndex = Math.floor(Math.random() * WARHAMMER_FACTIONS_DATA.length);
             const verdictFaction = WARHAMMER_FACTIONS_DATA[winningIndex];
             const sliceAngle = 360 / WARHAMMER_FACTIONS_DATA.length;
@@ -487,7 +510,7 @@ const FactionRouletteApp = () => {
             // Music Fade
             setTimeout(() => {
                 const activeBgm = bgmToggleRef.current ? audioRefs.current.bgm : audioRefs.current.bgmNext;
-                adjustVolume(activeBgm, 0.1, 1000);
+                if (activeBgm) adjustVolume(activeBgm, 0.1, 1000);
             }, 4000);
 
             // Sparks
@@ -504,6 +527,12 @@ const FactionRouletteApp = () => {
                 setIsMechanicalRitualActive(false);
                 setGameState('verdict');
                 
+                // Stop the spin sound if it's still playing
+                if (audioRefs.current.spin) {
+                    audioRefs.current.spin.pause();
+                    audioRefs.current.spin = null;
+                }
+                
                 if (verdictFaction.id === playerSelectedFaction.id) {
                     playSFX('victory');
                     addLog("RITUAL SUCCESS: Imperial Truth upheld");
@@ -515,13 +544,13 @@ const FactionRouletteApp = () => {
                 
                 document.body.style.background = verdictFaction.bgGradient;
                 const activeBgm = bgmToggleRef.current ? audioRefs.current.bgm : audioRefs.current.bgmNext;
-                adjustVolume(activeBgm, 0.4, 2000);
+                if (activeBgm) adjustVolume(activeBgm, 0.4, 2000);
             }, 5000);
         } catch (e) {
             setApplicationError(e);
             addLog(`CRITICAL: Ritual execution error: ${e.message}`);
         }
-    }, [playerSelectedFaction, isMechanicalRitualActive, playSFX, addLog]);
+    }, [playerSelectedFaction, isMechanicalRitualActive, playSFX, addLog, adjustVolume]);
 
     const resetRitualProtocol = useCallback(() => {
         setGameState('prediction');
@@ -555,20 +584,28 @@ const FactionRouletteApp = () => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
-            {/* Persistant Controls - Outside AnimatePresence to ensure constant visibility */}
-            <VoxControl 
-                isMuted={isMuted} 
-                onToggleMute={() => {
-                    setIsMuted(!isMuted);
-                    addLog(`Vox channels ${!isMuted ? 'silenced' : 'activated'}`);
-                }} 
-            />
-            <DebugControl 
-                onToggleDebug={() => {
-                    setIsDebugVisible(!isDebugVisible);
-                    addLog(`Debugger visibility toggled: ${!isDebugVisible}`);
-                }} 
-            />
+            {/* Persistant Controls - Moved to top-right group */}
+            <div className="vox-controls-group">
+                <VoxControl 
+                    isMuted={isMuted} 
+                    onToggleMute={() => {
+                        setIsMuted(!isMuted);
+                        addLog(`Vox channels ${!isMuted ? 'silenced' : 'activated'}`);
+                    }} 
+                    isWarpEnabled={isWarpEnabled}
+                    onToggleWarp={() => {
+                        setIsWarpEnabled(!isWarpEnabled);
+                        addLog(`Warp Field ${!isWarpEnabled ? 'stabilized' : 'activated'}`);
+                    }}
+                />
+                <DebugControl 
+                    onToggleDebug={() => {
+                        setIsDebugVisible(!isDebugVisible);
+                        addLog(`Debugger visibility toggled: ${!isDebugVisible}`);
+                    }} 
+                />
+            </div>
+            
             <CogitatorDebugConsole 
                 monitoringData={cogitatorMonitoringData} 
                 isVisible={isDebugVisible} 
@@ -679,7 +716,7 @@ const FactionRouletteApp = () => {
                                             }}
                                         >
                                             <div style={{ transform: `rotate(${positioningAngle}deg)` }}>
-                                                <img src={faction.icon} alt={faction.name} className="w-12 h-12 object-contain" />
+                                                <img src={faction.icon} alt={faction.name} className="faction-icon-img-wheel" />
                                             </div>
                                         </div>
                                     );

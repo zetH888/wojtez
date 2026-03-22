@@ -40,10 +40,14 @@ body {
     background-color: #0a0a0a;
     color: #e2e2e2;
     overflow-x: hidden;
-    font-family: 'Crimson Text', serif;
+    font-family: 'Almendra', serif; /* Surowy, gotycki font */
     margin: 0;
     padding: 0;
     transition: background 1s ease-in-out;
+}
+
+h1, h2, h3, .font-gothic {
+    font-family: 'UnifrakturMaguntia', cursive; /* Mocno gotycki font dla nagłówków */
 }
 
 /* --- Atmospheric Overlay Systems --- */
@@ -93,7 +97,12 @@ body {
 /** Grimdark Container Style */
 .grimdark-border {
     border: 2px solid #c5a059;
+    border-radius: 16px;
     box-shadow: 0 0 15px rgba(197, 160, 89, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.5);
+    clip-path: polygon(
+        2% 0%, 98% 1%, 100% 4%, 99% 96%, 97% 100%, 3% 99%, 0% 97%, 1% 3%
+    );
+    background: #111;
 }
 
 /** Standard Gothic Action Button */
@@ -109,6 +118,10 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     overflow: hidden;
+    border-radius: 8px;
+    clip-path: polygon(
+        5% 0%, 95% 2%, 100% 20%, 98% 80%, 95% 100%, 5% 98%, 0% 80%, 2% 20%
+    );
 }
 
 .gothic-btn:hover {
@@ -128,7 +141,7 @@ body {
 .faction-circle {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
+    border-radius: 12px;
     border: 2px solid #2a2a2a;
     display: flex;
     align-items: center;
@@ -138,6 +151,9 @@ body {
     background: #1a1a1a;
     overflow: hidden;
     padding: 10px;
+    clip-path: polygon(
+        10% 0%, 90% 5%, 100% 15%, 95% 85%, 90% 100%, 10% 95%, 0% 85%, 5% 15%
+    );
 }
 
 .faction-circle:hover {
@@ -162,9 +178,11 @@ body {
 
 .wheel-container {
     position: relative;
-    width: 400px;
-    height: 400px;
+    width: min(400px, 80vw); /* Responsive size */
+    height: min(400px, 80vw);
     margin: 0 auto;
+    border-radius: 50%;
+    touch-action: none; /* Prevent scrolling during interaction */
 }
 
 .wheel-pointer {
@@ -172,8 +190,8 @@ body {
     top: -20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 40px;
-    height: 40px;
+    width: clamp(20px, 10vw, 40px); /* Responsive pointer */
+    height: clamp(20px, 10vw, 40px);
     background: #c5a059;
     clip-path: polygon(50% 100%, 0 0, 100% 0);
     z-index: 20;
@@ -183,42 +201,53 @@ body {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 8px solid #c5a059;
+    border: clamp(4px, 1.5vw, 8px) solid #c5a059;
     position: relative;
     overflow: hidden;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    -webkit-backface-visibility: hidden; /* Fix for WebKit flickering */
+    backface-visibility: hidden;
+    transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .wheel-content {
     position: absolute;
-    width: 60px;
-    height: 60px;
+    width: clamp(30px, 12vw, 60px);
+    height: clamp(30px, 12vw, 60px);
     top: 50%;
     left: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    border-radius: 8px;
+}
+
+.faction-icon-img-wheel {
+    width: 100%;
+    height: 100%;
+    object-contain: contain;
 }
 
 /* --- Feedback Systems --- */
 
 @keyframes shakeRitual {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-    20% { transform: translate(-3px, 0px) rotate(1deg); }
-    30% { transform: translate(3px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(1deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(3px, 1px) rotate(-1deg); }
-    80% { transform: translate(-1px, -1px) rotate(1deg); }
-    90% { transform: translate(1px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
+    0% { transform: translate3d(1px, 1px, 0) rotate(0deg); }
+    10% { transform: translate3d(-1px, -2px, 0) rotate(-1deg); }
+    20% { transform: translate3d(-3px, 0px, 0) rotate(1deg); }
+    30% { transform: translate3d(3px, 2px, 0) rotate(0deg); }
+    40% { transform: translate3d(1px, -1px, 0) rotate(1deg); }
+    50% { transform: translate3d(-1px, 2px, 0) rotate(-1deg); }
+    60% { transform: translate3d(-3px, 1px, 0) rotate(0deg); }
+    70% { transform: translate3d(3px, 1px, 0) rotate(-1deg); }
+    80% { transform: translate3d(-1px, -1px, 0) rotate(1deg); }
+    90% { transform: translate3d(1px, 2px, 0) rotate(0deg); }
+    100% { transform: translate3d(1px, -2px, 0) rotate(-1deg); }
 }
 
 .wheel-shaking {
     animation: shakeRitual 0.5s infinite;
+    will-change: transform;
 }
 
 #sparks-container {
@@ -244,14 +273,22 @@ body {
 
 /* --- Control Systems --- */
 
-.vox-control, .debug-control {
+.vox-controls-group {
     position: fixed;
+    top: 30px;
+    right: 30px; /* Moved to top-right */
     z-index: 10001;
+    display: flex;
+    flex-direction: row; /* Horizontal alignment */
+    gap: 15px;
+}
+
+.vox-control, .debug-control, .warp-toggle-btn {
     background: #0a0a0a;
     border: 2px solid #c5a059;
     color: #c5a059;
     padding: 0;
-    border-radius: 4px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -260,25 +297,36 @@ body {
     width: 50px;
     height: 50px;
     pointer-events: auto;
-}
-
-.vox-control {
-    top: 30px;
-    left: 30px;
+    clip-path: polygon(
+        10% 0%, 90% 2%, 100% 15%, 98% 85%, 90% 100%, 10% 98%, 0% 85%, 2% 15%
+    );
 }
 
 .debug-control {
-    bottom: 30px;
-    left: 30px;
+    /* No longer absolute fixed position, handled by vox-controls-group flex */
 }
 
-.vox-control:hover, .debug-control:hover {
+.warp-toggle-btn.active {
+    background: #8b0000;
+    border-color: #ff0000;
+    color: #ffffff;
+    box-shadow: 0 0 15px #ff0000;
+    animation: warpPulse 2s infinite;
+}
+
+@keyframes warpPulse {
+    0% { transform: scale(1); box-shadow: 0 0 10px #8b0000; }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px #ff0000; }
+    100% { transform: scale(1); box-shadow: 0 0 10px #8b0000; }
+}
+
+.vox-control:hover, .debug-control:hover, .warp-toggle-btn:hover {
     background: #c5a059;
     color: #0a0a0a;
     box-shadow: 0 0 20px #c5a059;
 }
 
-.vox-control svg, .debug-control svg {
+.vox-control svg, .debug-control svg, .warp-toggle-btn svg {
     width: 32px;
     height: 32px;
     display: block;
@@ -288,34 +336,105 @@ body {
 
 .debug-window {
     position: fixed;
-    bottom: 90px;
-    left: 30px;
-    width: 280px;
-    background: rgba(0, 0, 0, 0.95);
-    border: 1px solid #c5a059;
-    padding: 15px;
+    top: 100px;
+    right: 30px;
+    width: 33.33vw;
+    height: 60vh;
+    max-width: 450px;
+    background: rgba(10, 10, 10, 0.95);
+    border: 2px solid #c5a059;
+    padding: 20px;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
+    font-size: 11px;
     color: #00ff00;
     z-index: 10000;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-    pointer-events: none;
-    border-radius: 2px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+    border-radius: 12px;
+    clip-path: polygon(
+        1% 0%, 99% 1%, 100% 5%, 98% 95%, 99% 100%, 1% 99%, 0% 95%, 2% 5%
+    );
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.debug-header {
+    border-bottom: 1px solid #c5a059;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .debug-title {
     color: #c5a059;
-    border-bottom: 1px solid #c5a059;
-    margin-bottom: 5px;
-    padding-bottom: 2px;
+    font-family: 'Cinzel', serif;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.debug-export-btn {
+    font-size: 9px;
+    color: #c5a059;
+    border: 1px solid #c5a059;
+    padding: 2px 8px;
+    border-radius: 4px;
     text-transform: uppercase;
 }
 
+.debug-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.debug-section {
+    color: #c5a059;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+    margin-bottom: 8px;
+    padding-bottom: 2px;
+}
+
 .debug-item {
-    margin-bottom: 3px;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.05);
 }
 
 .debug-label {
-    color: #aaa;
+    color: #888;
+}
+
+.debug-value {
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.debug-log-container {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.debug-log-entry {
+    font-size: 10px;
+    line-height: 1.4;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 0;
+}
+
+/* Custom Scrollbar */
+.scrollbar-custom::-webkit-scrollbar {
+    width: 6px;
+}
+.scrollbar-custom::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+    background: #c5a059;
+    border-radius: 3px;
 }
