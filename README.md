@@ -1,6 +1,8 @@
 # ⚔️ WH40K Faction Roulette ⚔️
 
-A grimdark, web-based roulette application set in the universe of **Warhammer 40,000**. Choose your destiny in the name of the Emperor (or the Chaos Gods) and let the "Rite of Selection" decide your fate.
+[PL] Mroczna aplikacja webowa typu ruletka osadzona w uniwersum Warhammer 40,000. Wybierz swoje przeznaczenie w imieniu Imperatora i pozwól, aby "Ryt Wyboru" zdecydował o Twoim losie.
+
+[EN] A grimdark web-based roulette application set in the Warhammer 40,000 universe. Choose your destiny in the name of the Emperor and let the "Rite of Selection" decide your fate.
 
 ![Grimdark UI](https://img.shields.io/badge/Vibe-Grimdark-blood)
 ![React](https://img.shields.io/badge/Framework-React-blue)
@@ -9,122 +11,84 @@ A grimdark, web-based roulette application set in the universe of **Warhammer 40
 
 ---
 
-## 💀 Features
+## 🇵🇱 Opis Funkcjonalności (Polish)
 
-- **Grimdark Aesthetic**: Gothic UI with CRT scanlines, flicker effects, and a dark metal/gold/blood color palette.
-- **Interactive Wheel of Fate**: A smooth, physics-based spinning wheel that rotates all faction icons synchronously.
-- **Dynamic Visuals**: Shaking effects and particle sparks generated during the selection ritual.
-- **Verdict Screens**: Unique victory and defeat screens with stylized faction comparisons and a "Cogitator Debug Console".
-- **Responsive Design**: Optimized for mobile devices, perfect for "floor-based" games or quick tabletop decisions.
+### 💀 Główne Cechy
+- **Estetyka Grimdark**: Gotycki interfejs użytkownika z efektami linii skanowania CRT, migotaniem i mroczną paletą barw (Złoto, Krew, Żelazo).
+- **Rytuał Wyboru (Koło Fortuny)**: Płynna mechanika losowania z ikonami frakcji obracającymi się synchronicznie wraz z kołem.
+- **System Audio Cathedral**: Atmosferyczna muzyka w tle (*Choirum Tenebrae*) z systemem dynamicznego wyciszania oraz efektami dźwiękowymi interakcji (hover, select, ticks).
+- **Konsola Debugowania Cogitator**: Zaawansowane okno monitorowania stanu maszyny losującej w czasie rzeczywistym.
+- **Werdykt Maszyny**: Unikalne ekrany zwycięstwa ("Victory for the Emperor") i porażki ("Heresy Detected") z animowanymi porównaniami.
 
-## 🛠️ Technology Stack
+### 🎮 Sterowanie
+- **Ikona Głośnika (Prawy Górny Róg)**: Włączanie/wyłączanie kanałów Vox (muzyki).
+- **Ikona Błędu (Prawy Dolny Róg)**: Przełączanie widoczności konsoli debugowania Cogitator.
+- **Kliknięcie Frakcji**: Wybór Twojej przepowiedni.
+- **Przycisk Rytuału**: Rozpoczęcie losowania.
 
-- **Frontend**: React (18.x)
-- **Styling**: Tailwind CSS (Play CDN)
-- **Animations**: Framer Motion
-- **Effects**: Canvas Confetti
-- **Typography**: Google Fonts (Cinzel, Crimson Text)
+---
 
-## 📁 Project Structure
+## 🇬🇧 Features Breakdown (English)
 
-```text
-wojtez/
-├── index.html     # Main entry point & HTML structure
-├── style.css      # Custom Grimdark & CRT styles
-├── app.js         # React logic & Wheel mechanics
-└── assets/        # Faction icons (Space Marines chapters)
+### 💀 Core Features
+- **Grimdark Aesthetic**: Gothic UI featuring CRT scanlines, flicker effects, and a "Blood & Iron" color palette.
+- **Rite of Selection (Wheel of Fate)**: Smooth physics-based roulette mechanics with synchronous icon rotation.
+- **Cathedral Audio Engine**: Atmospheric background music (*Choirum Tenebrae*) with dynamic fading and interaction SFX (hover, select, wheel ticks).
+- **Cogitator Debug Console**: Real-time monitoring window for machine spirit diagnostics and ritual states.
+- **Machine Verdict**: Dynamic outcome screens ("Victory for the Emperor" vs "Heresy Detected") with stylized faction comparisons.
+
+### 🎮 Controls
+- **Vox Icon (Top Right)**: Toggle background music (Vox channels).
+- **Bug Icon (Bottom Right)**: Toggle the Cogitator Debug Console.
+- **Faction Selection**: Click any faction icon to set your prediction.
+- **Initiate Ritual**: Start the mechanical selection process.
+
+---
+
+## 🛠️ Struktura Projektu i Uruchomienie
+
 ```
-
-## 🚀 How to Run
-
-Since the project uses CDNs for all major libraries, you can run it in two ways:
-
-1. **Local Server (Recommended)**:
-   To avoid CORS issues with the `app.js` file, run a simple local server:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   ```
-   Then open `http://localhost:8000` in your browser.
-
-2. **Direct Execution**:
-   If the scripts are bundled or you have disabled local CORS restrictions, simply open `index.html` in any modern web browser.
-
-## 📜 Cogitator Debug Console
-The application features a built-in debug window (bottom-right) that tracks:
-- Current screen state
-- Player's prediction
-- The machine's random verdict
-- Target rotation angles
-
----
-
-> "The Omnissiah guides the machine spirit... Your soul has been found wanting, or your faith has been rewarded."
-
-*Developed as a specialized tool for Warhammer 40k enthusiasts.*
-
-# ⚔️ WH40K Faction Roulette ⚔️
-
-Mroczna aplikacja webowa typu ruletka, osadzona w uniwersum **Warhammer 40,000**. Wybierz swoje przeznaczenie w imieniu Imperatora (lub Bogów Chaosu) i pozwól, aby "Ryt Wyboru" zdecydował o Twoim losie.
-
-![Grimdark UI](https://img.shields.io/badge/Vibe-Grimdark-blood)
-![React](https://img.shields.io/badge/Framework-React-blue)
-![TailwindCSS](https://img.shields.io/badge/Style-TailwindCSS-teal)
-![Framer Motion](https://img.shields.io/badge/Animation-Framer_Motion-purple)
-
----
-
-## 💀 Funkcje
-
-- **Estetyka Grimdark**: Gotycki interfejs z liniami skanowania CRT, efektami migotania i paletą barw opartą na ciemnym metalu, złocie i krwi.
-- **Interaktywne Koło Przeznaczenia**: Płynnie działające koło fortuny, w którym ikony frakcji obracają się synchronicznie wraz z całą konstrukcją.
-- **Dynamiczne Efekty**: Efekty trzęsienia ekranu i iskry generowane podczas rytuału losowania.
-- **Ekrany Werdyktu**: Unikalne ekrany zwycięstwa i porażki ze stylizowanym porównaniem frakcji oraz konsolą debugowania "Cogitator".
-- **Responsywność**: Aplikacja zoptymalizowana pod urządzenia mobilne, idealna do gier "podłogowych" lub szybkich decyzji przy stole bitewnym.
-
-## 🛠️ Stos Technologiczny
-
-- **Frontend**: React (18.x)
-- **Stylizacja**: Tailwind CSS (Play CDN)
-- **Animacje**: Framer Motion
-- **Efekty**: Canvas Confetti
-- **Typografia**: Google Fonts (Cinzel, Crimson Text)
-
-## 📁 Struktura Projektu
-
-```text
 wojtez/
 ├── index.html     # Główny punkt wejścia i struktura HTML
 ├── style.css      # Niestandardowe style Grimdark i efekty CRT
 ├── app.js         # Logika React i mechanika koła
+├── sounds/        # Pliki audio (muzyka i efekty)
 └── assets/        # Ikony frakcji (zakony Space Marines)
 ```
 
-## 🚀 Jak Uruchomić
+### 🚀 Jak Uruchomić
 
 Ponieważ projekt korzysta z sieci CDN dla wszystkich głównych bibliotek, możesz go uruchomić na dwa sposoby:
 
 1. **Lokalny Serwer (Zalecane)**:
-   Aby uniknąć problemów z CORS przy ładowaniu pliku `app.js`, uruchom prosty serwer lokalny:
+   Aby uniknąć problemów z CORS przy ładowaniu pliku `app.js` oraz problemów z odtwarzaniem audio, uruchom prosty serwer lokalny:
    ```bash
    # Używając Pythona
    python -m http.server 8000
    ```
-   Następnie otwórz `http://localhost:8000` w przeglądarce.
+   Następnie otwórz `http://localhost:8000` w przeglądarce. Kliknij dowolne miejsce na stronie, aby aktywować dźwięk.
 
 2. **Bezpośrednie Uruchomienie**:
-   Jeśli skrypty są odpowiednio skonfigurowane lub masz wyłączone lokalne ograniczenia CORS, po prostu otwórz `index.html` w dowolnej nowoczesnej przeglądarce.
+   Otwarcie pliku `index.html` bezpośrednio z dysku (`file://`) może powodować problemy z wczytywaniem skryptów i dźwięków ze względu na politykę bezpieczeństwa przeglądarek. Zdecydowanie zaleca się metodę z serwerem lokalnym.
 
 ## 📜 Konsola Debugowania Cogitator
 Aplikacja posiada wbudowane okno debugowania (prawy dolny róg), które śledzi:
-- Aktualny stan ekranu
-- Wybór gracza
-- Losowy werdykt maszyny
-- Docelowe kąty obrotu
+- Aktualny stan ekranu (ritualsState)
+- Wybór gracza (selectedInitiate)
+- Losowy werdykt maszyny (machineVerdict)
+- Energię kinetyczną koła (kineticEnergy)
+- Status wyciszenia (voxActive)
+
+## 🎮 Sterowanie / Controls
+- **Ikona Głośnika (Prawy Górny Róg)**: Włączanie/wyłączanie muzyki w tle (Vox channels).
+- **Ikona Błędu (Prawy Dolny Róg)**: Przełączanie widoczności konsoli debugowania Cogitator.
+- **Wybór Frakcji**: Kliknij dowolną ikonę, aby ustawić swoją przepowiednię.
+- **Inicjacja Rytuału**: Kliknij przycisk, aby rozpocząć mechaniczny proces losowania.
 
 ---
 
 > "Omnissiah prowadzi ducha maszyny... Twoja dusza została uznana za godną lub Twoja wiara została wystawiona na próbę."
+> 
+> "The Omnissiah guides the machine spirit... Your soul has been found wanting, or your faith has been rewarded."
 
 *Stworzone jako wyspecjalizowane narzędzie dla entuzjastów Warhammera 40k.*
-.*
