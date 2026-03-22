@@ -35,22 +35,59 @@
     }
 }
 
+/* --- Font Tokens & Variables --- */
+:root {
+    --font-primary: 'Cinzel', Georgia, 'Times New Roman', serif;
+    --font-secondary: 'Cardo', 'Times New Roman', serif;
+    --font-debugger: 'JetBrains Mono', 'Fira Code', Menlo, Monaco, 'Courier New', monospace;
+}
+
 /* --- Root & Reset --- */
 body {
     background-color: #0a0a0a;
     color: #e2e2e2;
-    overflow-x: hidden;
-    font-family: 'Almendra', serif; /* Surowy, gotycki font */
+    overflow: hidden; /* Wyłącz scrollowanie globalnie */
+    font-family: var(--font-secondary);
     margin: 0;
     padding: 0;
     transition: background 1s ease-in-out;
+    height: 100vh;
+    width: 100vw;
 }
 
-h1, h2, h3, .font-gothic {
-    font-family: 'UnifrakturMaguntia', cursive; /* Mocno gotycki font dla nagłówków */
+* {
+    font-family: inherit; /* Dziedziczenie czcionki dla wszystkich elementów */
+    box-sizing: border-box;
 }
 
-/* --- Atmospheric Overlay Systems --- */
+h1, h2, h3, .font-gothic, button, .debug-title, .debug-section {
+    font-family: var(--font-primary) !important;
+    font-weight: 700;
+}
+
+/* --- Responsive Container --- */
+.app-root-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+/* --- Warp Visual Effects --- */
+.warp-effect {
+    transition: filter 0.2s ease-out;
+    will-change: filter, transform;
+}
+
+/* Fix for Desktop Blur (Chrome/Edge/Firefox) */
+.wheel.warp-effect {
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
 
 /** CRT Scanlines Overlay */
 .scanlines {
@@ -271,6 +308,98 @@ h1, h2, h3, .font-gothic {
     box-shadow: 0 0 10px #c5a059;
 }
 
+/* --- Leaderboard Styles --- */
+.leaderboard-container {
+    position: fixed;
+    top: 30px;
+    left: 30px;
+    width: 280px;
+    background: rgba(15, 15, 15, 0.9);
+    border: 2px solid #c5a059;
+    padding: 20px;
+    z-index: 1000;
+    border-radius: 12px;
+    clip-path: polygon(0% 2%, 98% 0%, 100% 5%, 95% 95%, 100% 100%, 2% 98%, 0% 95%, 5% 5%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    padding: 4px 0;
+}
+
+.top-factions-list {
+    margin-top: 10px;
+}
+
+.faction-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.reset-btn {
+    margin-top: 15px;
+    background: #440000;
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    font-size: 10px;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.reset-btn:hover {
+    background: #880000;
+    color: white;
+}
+
+/* --- Registration Modal --- */
+.registration-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.registration-modal {
+    width: 400px;
+    padding: 40px;
+    text-align: center;
+    background: #0a0a0a;
+    border: 3px solid #c5a059;
+    border-radius: 16px;
+    clip-path: polygon(5% 0%, 95% 2%, 100% 10%, 98% 90%, 95% 100%, 5% 98%, 0% 90%, 2% 10%);
+}
+
+.gothic-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #c5a059;
+    color: #c5a059;
+    padding: 12px;
+    margin: 20px 0;
+    font-family: 'Almendra', serif;
+    text-align: center;
+    outline: none;
+}
+
+.gothic-input:focus {
+    box-shadow: 0 0 10px #c5a059;
+}
+
 /* --- Control Systems --- */
 
 .vox-controls-group {
@@ -339,12 +468,14 @@ h1, h2, h3, .font-gothic {
     top: 100px;
     right: 30px;
     width: 33.33vw;
-    height: 60vh;
+    height: calc(100vh - 150px); /* Dynamic Height */
     max-width: 450px;
     background: rgba(10, 10, 10, 0.95);
     border: 2px solid #c5a059;
     padding: 20px;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: var(--font-debugger);
+    font-variant-ligatures: common-ligatures;
+    font-feature-settings: "liga" 1, "calt" 1;
     font-size: 11px;
     color: #00ff00;
     z-index: 10000;
@@ -357,6 +488,7 @@ h1, h2, h3, .font-gothic {
     flex-direction: column;
     pointer-events: auto;
     overflow: hidden;
+    transform: none !important; /* Usuwamy shake */
 }
 
 .debug-header {
@@ -416,8 +548,9 @@ h1, h2, h3, .font-gothic {
     background: rgba(0, 0, 0, 0.4);
     padding: 8px;
     border-radius: 4px;
-    max-height: 200px;
+    flex-grow: 1; /* Zajmuje resztę miejsca */
     overflow-y: auto;
+    border: 1px solid rgba(197, 160, 89, 0.2);
 }
 
 .debug-log-entry {

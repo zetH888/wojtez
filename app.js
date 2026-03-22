@@ -123,27 +123,27 @@ const CogitatorDebugConsole = ({ monitoringData, isVisible, eventLog, onExportLo
     return (
         <div className="debug-window" aria-hidden="true">
             <div className="debug-header flex justify-between items-center">
-                <div className="debug-title">Cogitator Debug Console (Live 3Hz)</div>
-                <button onClick={onExportLogs} className="debug-export-btn">Export</button>
+                <div className="debug-title">Machine Spirit Analytics (3Hz)</div>
+                <button onClick={onExportLogs} className="debug-export-btn">Data Dump</button>
             </div>
             
             <div className="debug-content scrollbar-custom">
-                <div className="debug-section">System Parameters</div>
+                <div className="debug-section">Sanctified Parameters</div>
                 <div className="grid grid-cols-1 gap-1">
-                    {Object.entries(monitoringData).map(([dataKey, dataValue]) => (
-                        <div key={dataKey} className="debug-item flex justify-between">
-                            <span className="debug-label">{dataKey}:</span> 
-                            <span className="debug-value">{typeof dataValue === 'object' ? 'OBJ' : String(dataValue)}</span>
+                    {Object.entries(monitoringData).map(([label, value]) => (
+                        <div key={label} className="debug-item flex justify-between text-[10px]">
+                            <span className="debug-label">{label}</span> 
+                            <span className="debug-value">{value}</span>
                         </div>
                     ))}
                 </div>
 
-                <div className="debug-section mt-4">Event Datastream</div>
-                <div className="debug-log-container">
-                    {eventLog.slice(-10).map((log, i) => (
+                <div className="debug-section mt-4">Event Datastream (Live)</div>
+                <div className="debug-log-container scrollbar-custom">
+                    {eventLog.map((log, i) => (
                         <div key={i} className="debug-log-entry">
-                            <span className="text-gold/50 mr-2">[{new Date(log.ts).toLocaleTimeString()}]</span>
-                            {log.msg}
+                            <span className="text-gold/40 mr-2">[{new Date(log.ts).toLocaleTimeString()}]</span>
+                            <span className="text-white/40 italic">({log.element})</span> {log.msg}
                         </div>
                     ))}
                 </div>
@@ -182,7 +182,7 @@ const ErrorDisplay = ({ error, onReset }) => (
  */
 const FactionRouletteApp = () => {
     // --- State Management ---
-    const [gameState, setGameState] = useState('prediction'); // prediction | spinning | verdict
+    const [gameState, setGameState] = useState('prediction'); // registration | prediction | spinning | verdict
     const [playerSelectedFaction, setPlayerSelectedFaction] = useState(null);
     const [machineVerdictFaction, setMachineVerdictFaction] = useState(null);
     const [wheelRotationAngle, setWheelRotationAngle] = useState(0);
@@ -191,9 +191,40 @@ const FactionRouletteApp = () => {
     const [cogitatorMonitoringData, setCogitatorMonitoringData] = useState({});
     const [isMuted, setIsMuted] = useState(false);
     const [isDebugVisible, setIsDebugVisible] = useState(false);
-    const [isWarpEnabled, setIsWarpEnabled] = useState(true); // Re-added missing state
-    const [applicationError, setApplicationError] = useState(null); // Global error state
-    const [eventLog, setEventLog] = useState([]); // Log for debugger export
+    const [isWarpEnabled, setIsWarpEnabled] = useState(true);
+    const [applicationError, setApplicationError] = useState(null);
+    const [eventLog, setEventLog] = useState([]);
+    const [isInteractingWithRitual, setIsInteractingWithRitual] = useState(false);
+
+    // --- User Profile & Stats ---
+    const [userData, setUserData] = useState({
+        username: '',
+        totalGames: 0,
+        wins: 0,
+        losses: 0,
+        factionStats: {},
+        lastPlayed: null,
+        achievements: []
+    });
+    const [isRegistered, setIsRegistered] = useState(false);
+
+    // Initialize User Data from LocalStorage
+    useEffect(() => {
+        const savedData = localStorage.getItem('wh40k_user_profile');
+        if (savedData) {
+            setUserData(JSON.parse(savedData));
+            setIsRegistered(true);
+        } else {
+            setGameState('registration');
+        }
+    }, []);
+
+    // Save User Data to LocalStorage
+    useEffect(() => {
+        if (isRegistered) {
+            localStorage.setItem('wh40k_user_profile', JSON.stringify(userData));
+        }
+    }, [userData, isRegistered]);
 
     // --- Audio System Management ---
     const audioRefs = useRef({
@@ -203,7 +234,8 @@ const FactionRouletteApp = () => {
         select: null,
         ticks: [],
         victory: [],
-        defeat: []
+        defeat: [],
+        spin: null // Dedicated spinning sound
     });
 
     // Audio pool for ticks to allow overlapping during fast rotation
@@ -215,10 +247,20 @@ const FactionRouletteApp = () => {
     const lastHoverTimeRef = useRef(0);
     const hoverPoolIndexRef = useRef(0);
 
-    // Logging Utility
-    const addLog = useCallback((msg) => {
-        setEventLog(prev => [...prev, { ts: Date.now(), msg }].slice(-100));
+    // Logging Utility with Hover Events Support
+    const addLog = useCallback((msg, element = 'System', coords = null) => {
+        const entry = { 
+            ts: Date.now(), 
+            msg: coords ? `${msg} | Pos: ${coords.x},${coords.y}` : msg,
+            element 
+        };
+        setEventLog(prev => [entry, ...prev].slice(0, 100));
     }, []);
+
+    const handleHover = useCallback((e, label) => {
+        addLog(`Hover detected | Target: ${label}`, label, { x: e.clientX, y: e.clientY });
+        playSFX('hover');
+    }, [addLog]);
 
     // Export Logs Utility
     const exportLogs = useCallback(() => {
@@ -433,19 +475,18 @@ const FactionRouletteApp = () => {
         const activeBgm = bgmToggleRef.current ? audioRefs.current.bgm : audioRefs.current.bgmNext;
         
         setCogitatorMonitoringData({
-            ritualsState: gameState,
-            selectedInitiate: playerSelectedFaction ? playerSelectedFaction.name : 'null',
-            machineVerdict: machineVerdictFaction ? machineVerdictFaction.name : 'null',
-            kineticEnergy: Math.floor(visualRotation),
-            isRitualInProgress: isMechanicalRitualActive,
-            voxActive: !isMuted,
-            warpField: isWarpEnabled,
-            bgmVolume: activeBgm ? activeBgm.volume.toFixed(2) : 0,
-            bgmSource: activeBgm ? activeBgm.src.split('/').pop() : 'none',
-            hoverPoolIndex: hoverPoolIndexRef.current,
-            currentBG: document.body.style.background.substring(0, 30) + '...'
+            "Ritual Phase | State | System": gameState,
+            "Chosen Initiate | Name | Selection": playerSelectedFaction ? playerSelectedFaction.name : 'None',
+            "Machine Verdict | Name | Result": machineVerdictFaction ? machineVerdictFaction.name : 'None',
+            "Kinetic Power | Deg | Wheel": Math.floor(visualRotation),
+            "Ritual Active | Status | Engine": isMechanicalRitualActive ? 'YES' : 'NO',
+            "Vox Channel | Status | Audio": isMuted ? 'SILENCED' : 'ACTIVE',
+            "Immaterium Field | Toggle | Warp": isWarpEnabled ? 'ACTIVE' : 'STABLE',
+            "BGM Volume | Lvl | Audio": activeBgm ? activeBgm.volume.toFixed(2) : 0,
+            "Active Soul | User | Profile": userData.username || 'Unregistered',
+            "Total Rituals | Count | Stats": userData.totalGames
         });
-    }, [gameState, playerSelectedFaction, machineVerdictFaction, visualRotation, isMechanicalRitualActive, isMuted]);
+    }, [gameState, playerSelectedFaction, machineVerdictFaction, visualRotation, isMechanicalRitualActive, isMuted, isWarpEnabled, userData]);
 
     // --- Memoized Values ---
     const wheelConicBackground = useMemo(() => {
@@ -476,8 +517,13 @@ const FactionRouletteApp = () => {
         try {
             if (!playerSelectedFaction || isMechanicalRitualActive) return;
             
+            // --- Part 3: Result Prediction & Sync ---
+            const winningIndex = Math.floor(Math.random() * WARHAMMER_FACTIONS_DATA.length);
+            const verdictFaction = WARHAMMER_FACTIONS_DATA[winningIndex];
+            
             setGameState('spinning');
             setIsMechanicalRitualActive(true);
+            setMachineVerdictFaction(verdictFaction); // Store prediction immediately
             
             // BUG FIX: Randomly select one of fortune_wheel_x sounds for each spin
             const wheelSounds = [
@@ -491,21 +537,22 @@ const FactionRouletteApp = () => {
             const spinAudio = new Audio(randomWheelSound);
             spinAudio.volume = 0.8; // Set volume between 0.7-0.9
             spinAudio.play().catch(e => {
-                addLog(`Vox Error: Could not play spin sound - ${e.message}`);
+                addLog(`Vox Error: Could not play spin sound - ${e.message}`, "Vox");
                 console.warn("Audio play blocked:", e);
             });
             
             // Store reference to stop it later if needed
             audioRefs.current.spin = spinAudio;
             
-            const winningIndex = Math.floor(Math.random() * WARHAMMER_FACTIONS_DATA.length);
-            const verdictFaction = WARHAMMER_FACTIONS_DATA[winningIndex];
             const sliceAngle = 360 / WARHAMMER_FACTIONS_DATA.length;
-            const totalKineticRotation = (5 * 360) + (Math.random() * 5 * 360) + ((WARHAMMER_FACTIONS_DATA.length - winningIndex) * sliceAngle - (sliceAngle / 2) - 90);
+            // Calculate target angle to align arrow with segment center
+            // Arrow is at top (-90 deg offset in coordinate system)
+            // segments are drawn from 0 deg clockwise
+            const segmentCenter = (winningIndex * sliceAngle) + (sliceAngle / 2);
+            const targetRotation = (10 * 360) - segmentCenter; // 10 full spins + target
             
-            setWheelRotationAngle(totalKineticRotation);
-            setMachineVerdictFaction(verdictFaction);
-            addLog(`Machine Spirit calculating... Target: ${verdictFaction.name}`);
+            setWheelRotationAngle(targetRotation);
+            addLog(`Machine Spirit calculating... Target: ${verdictFaction.name}`, "Ritual");
 
             // Music Fade
             setTimeout(() => {
@@ -532,14 +579,30 @@ const FactionRouletteApp = () => {
                     audioRefs.current.spin.pause();
                     audioRefs.current.spin = null;
                 }
+
+                // Update Stats
+                const isWin = verdictFaction.id === playerSelectedFaction.id;
+                setUserData(prev => {
+                    const newStats = { ...prev.factionStats };
+                    newStats[playerSelectedFaction.name] = (newStats[playerSelectedFaction.name] || 0) + 1;
+                    
+                    return {
+                        ...prev,
+                        totalGames: prev.totalGames + 1,
+                        wins: isWin ? prev.wins + 1 : prev.wins,
+                        losses: isWin ? prev.losses : prev.losses + 1,
+                        factionStats: newStats,
+                        lastPlayed: Date.now()
+                    };
+                });
                 
-                if (verdictFaction.id === playerSelectedFaction.id) {
+                if (isWin) {
                     playSFX('victory');
-                    addLog("RITUAL SUCCESS: Imperial Truth upheld");
+                    addLog("RITUAL SUCCESS: Imperial Truth upheld", "Ritual");
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#c5a059', '#ffffff', '#8b0000'] });
                 } else {
                     playSFX('defeat');
-                    addLog("RITUAL FAILURE: Heretical deviation detected");
+                    addLog("RITUAL FAILURE: Heretical deviation detected", "Ritual");
                 }
                 
                 document.body.style.background = verdictFaction.bgGradient;
@@ -548,7 +611,7 @@ const FactionRouletteApp = () => {
             }, 5000);
         } catch (e) {
             setApplicationError(e);
-            addLog(`CRITICAL: Ritual execution error: ${e.message}`);
+            addLog(`CRITICAL: Ritual execution error: ${e.message}`, "System");
         }
     }, [playerSelectedFaction, isMechanicalRitualActive, playSFX, addLog, adjustVolume]);
 
@@ -583,25 +646,113 @@ const FactionRouletteApp = () => {
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
+        <div className="app-root-container">
+            {/* Registration Modal */}
+            {gameState === 'registration' && (
+                <div className="registration-overlay">
+                    <motion.div 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="registration-modal"
+                    >
+                        <h2 className="text-3xl text-gold mb-4">Identify Your Soul</h2>
+                        <p className="text-gray-400 italic">Your service to the Emperor begins here.</p>
+                        <input 
+                            type="text" 
+                            className="gothic-input" 
+                            placeholder="Enter Name..."
+                            maxLength={20}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                                setUserData(prev => ({ ...prev, username: val }));
+                            }}
+                            value={userData.username}
+                        />
+                        <button 
+                            className="gothic-btn w-full"
+                            onClick={() => {
+                                if (userData.username.length >= 3) {
+                                    setIsRegistered(true);
+                                    setGameState('prediction');
+                                    addLog(`New soul registered: ${userData.username}`, "Registration");
+                                }
+                            }}
+                        >
+                            Start Playing
+                        </button>
+                        <p className="text-[10px] text-gray-600 mt-4">Data will be stored within your local cogitator.</p>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Leaderboard Panel */}
+            {isRegistered && (
+                <div className="leaderboard-container">
+                    <h3 className="text-gold border-bottom border-gold/30 pb-2">Sacred Ledger</h3>
+                    <div className="stat-row">
+                        <span>Adept:</span>
+                        <span className="text-gold">{userData.username}</span>
+                    </div>
+                    <div className="stat-row">
+                        <span>Success Rate:</span>
+                        <span className="text-green-500">
+                            {userData.totalGames > 0 ? ((userData.wins / userData.totalGames) * 100).toFixed(1) : 0}%
+                        </span>
+                    </div>
+                    <div className="stat-row">
+                        <span>Heresy Rate:</span>
+                        <span className="text-blood">
+                            {userData.totalGames > 0 ? ((userData.losses / userData.totalGames) * 100).toFixed(1) : 0}%
+                        </span>
+                    </div>
+                    
+                    <div className="top-factions-list">
+                        <span className="text-[10px] text-gray-500 uppercase">Preferred Chapters:</span>
+                        {Object.entries(userData.factionStats)
+                            .sort(([,a], [,b]) => b - a)
+                            .slice(0, 3)
+                            .map(([name, count]) => (
+                                <div key={name} className="faction-stat-item">
+                                    <span className="text-gold">•</span>
+                                    <span>{name}</span>
+                                    <span className="ml-auto text-gray-500">[{count}]</span>
+                                </div>
+                            ))
+                        }
+                    </div>
+
+                    <button 
+                        className="reset-btn"
+                        onClick={() => {
+                            if (confirm("Are you sure you want to purge your service record?")) {
+                                localStorage.removeItem('wh40k_user_profile');
+                                window.location.reload();
+                            }
+                        }}
+                    >
+                        Reset Progress
+                    </button>
+                </div>
+            )}
+
             {/* Persistant Controls - Moved to top-right group */}
             <div className="vox-controls-group">
                 <VoxControl 
                     isMuted={isMuted} 
                     onToggleMute={() => {
                         setIsMuted(!isMuted);
-                        addLog(`Vox channels ${!isMuted ? 'silenced' : 'activated'}`);
+                        addLog(`Vox channels ${!isMuted ? 'silenced' : 'activated'}`, "Vox");
                     }} 
                     isWarpEnabled={isWarpEnabled}
                     onToggleWarp={() => {
                         setIsWarpEnabled(!isWarpEnabled);
-                        addLog(`Warp Field ${!isWarpEnabled ? 'stabilized' : 'activated'}`);
+                        addLog(`Warp Field ${!isWarpEnabled ? 'stabilized' : 'activated'}`, "Warp");
                     }}
                 />
                 <DebugControl 
                     onToggleDebug={() => {
                         setIsDebugVisible(!isDebugVisible);
-                        addLog(`Debugger visibility toggled: ${!isDebugVisible}`);
+                        addLog(`Debugger visibility toggled: ${!isDebugVisible}`, "Debug");
                     }} 
                 />
             </div>
@@ -612,7 +763,7 @@ const FactionRouletteApp = () => {
                 eventLog={eventLog}
                 onExportLogs={exportLogs}
             />
-            
+
             <AnimatePresence mode="wait">
                 {/* STAGE 1: INITIATE SELECTION */}
                 {gameState === 'prediction' && (
@@ -621,30 +772,27 @@ const FactionRouletteApp = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
-                        className="max-w-4xl w-full text-center space-y-8"
+                        className="max-w-4xl w-full text-center space-y-8 px-4"
                     >
                         <header className="space-y-2">
                             <h1 className="font-gothic text-4xl md:text-6xl text-gold tracking-widest drop-shadow-lg">
                                 WH40K FACTION ROULETTE
                             </h1>
                             <p className="font-body text-xl italic text-gray-400">
-                                "Choose your destiny in the name of the Emperor (or the Chaos Gods)"
+                                "Choose your destiny in the name of the Emperor"
                             </p>
                         </header>
 
-                        <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 py-8">
+                        <section className="grid grid-cols-4 sm:grid-cols-7 gap-2 py-4">
                             {WARHAMMER_FACTIONS_DATA.map(faction => (
                                 <article key={faction.id} className="flex flex-col items-center space-y-2">
                                     <div 
                                         role="button"
                                         aria-label={`Select ${faction.name}`}
-                                        onMouseEnter={() => {
-                                            playSFX('hover');
-                                            addLog(`Hover: ${faction.name}`);
-                                        }}
+                                        onMouseEnter={(e) => handleHover(e, faction.name)}
                                         onClick={() => {
                                             handleFactionSelection(faction);
-                                            addLog(`Selected Prediction: ${faction.name}`);
+                                            addLog(`Selected Prediction: ${faction.name}`, "UI");
                                         }}
                                         className={`faction-circle ${playerSelectedFaction?.id === faction.id ? 'selected' : ''}`}
                                     >
@@ -662,9 +810,9 @@ const FactionRouletteApp = () => {
                                 initial={{ opacity: 0, scale: 0.5 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="gothic-btn"
-                                onMouseEnter={() => playSFX('hover')}
+                                onMouseEnter={(e) => handleHover(e, "Initiate Ritual Button")}
                                 onClick={() => {
-                                    addLog("Initiating Sacred Ritual of Selection");
+                                    addLog("Initiating Sacred Ritual of Selection", "Ritual");
                                     initiateRitualOfSelection();
                                 }}
                             >
