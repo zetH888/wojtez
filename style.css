@@ -1,75 +1,82 @@
-/*
+/**
  * ====================================
  * WH40K FACTION ROULETTE - STYLESHEET
  * ====================================
- * Estetyka: Grimdark, Gothic, CRT Terminal
- * Czcionki: Cinzel (nagłówki), Crimson Text (treść)
+ * Refactored for semantic structure and 
+ * technical clarity in a Grimdark setting.
  */
 
-/* === General Body & Typography === */
+/* --- Root & Reset --- */
 body {
-    background-color: #0a0a0a; /* Głęboka czerń tła */
-    color: #e2e2e2; /* Domyślny kolor tekstu */
-    overflow-x: hidden; /* Zapobiega poziomemu przewijaniu */
-    font-family: 'Crimson Text', serif; /* Domyślna czcionka dla treści */
+    background-color: #0a0a0a;
+    color: #e2e2e2;
+    overflow-x: hidden;
+    font-family: 'Crimson Text', serif;
+    margin: 0;
+    padding: 0;
 }
 
-/* === Grimdark Effects (CRT, Scanlines) === */
+/* --- Atmospheric Overlay Systems --- */
 
-/* Nakładka imitująca linie skanowania starego monitora CRT */
+/** CRT Scanlines Overlay */
 .scanlines {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
     background: linear-gradient(
         rgba(18, 16, 16, 0) 50%,
         rgba(0, 0, 0, 0.25) 50%
     ), linear-gradient(
         90deg,
-        rgba(255, 0, 0, 0.06), /* Czerwona poświata */
-        rgba(0, 255, 0, 0.02), /* Zielona poświata */
-        rgba(0, 0, 255, 0.06)  /* Niebieska poświata */
+        rgba(255, 0, 0, 0.06),
+        rgba(0, 255, 0, 0.02),
+        rgba(0, 0, 255, 0.06)
     );
     background-size: 100% 2px, 3px 100%;
-    pointer-events: none; /* Warstwa nie przechwytuje zdarzeń myszy */
+    pointer-events: none;
     z-index: 100;
 }
 
-/* Nakładka imitująca migotanie ekranu CRT */
+/** Global Flicker Simulation */
 .crt-flicker {
-    animation: flicker 0.15s infinite;
+    animation: flickerAnimation 0.15s infinite;
     pointer-events: none;
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
     background: rgba(18, 16, 16, 0.03);
     z-index: 101;
 }
 
-/* Animacja migotania */
-@keyframes flicker {
+@keyframes flickerAnimation {
     0% { opacity: 0.1; }
     50% { opacity: 0.2; }
     100% { opacity: 0.1; }
 }
 
-/* === UI Components & Borders === */
+/* --- Core UI Primitives --- */
 
-/* Stylizowana ramka w klimacie grimdark */
+/** Grimdark Container Style */
 .grimdark-border {
-    border: 2px solid #c5a059; /* Złota ramka */
+    border: 2px solid #c5a059;
     box-shadow: 0 0 15px rgba(197, 160, 89, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Gotycki przycisk */
+/** Standard Gothic Action Button */
 .gothic-btn {
     position: relative;
     padding: 1rem 2rem;
     background: #1a1a1a;
     border: 1px solid #c5a059;
     color: #c5a059;
-    font-family: 'Cinzel', serif; /* Użycie gotyckiej czcionki */
+    font-family: 'Cinzel', serif;
     text-transform: uppercase;
     letter-spacing: 2px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     overflow: hidden;
 }
@@ -85,9 +92,9 @@ body {
     cursor: not-allowed;
 }
 
-/* === Faction Selection Screen === */
+/* --- Selection Mechanics --- */
 
-/* Okrąg do wyboru frakcji */
+/** Individual Faction Selection Circle */
 .faction-circle {
     width: 100px;
     height: 100px;
@@ -109,23 +116,20 @@ body {
     box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
 }
 
-/* Styl dla wybranego okręgu */
 .faction-circle.selected {
     border-color: #c5a059;
     background: #2a2a2a;
     box-shadow: 0 0 20px rgba(197, 160, 89, 0.6);
 }
 
-/* Obrazek ikony frakcji */
 .faction-icon-img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Skaluje obrazek, zachowując proporcje */
+    object-fit: contain;
 }
 
-/* === Wheel of Fate (Spinning Screen) === */
+/* --- The Sacred Wheel (Roulette) --- */
 
-/* Kontener na koło fortuny */
 .wheel-container {
     position: relative;
     width: 400px;
@@ -133,7 +137,6 @@ body {
     margin: 0 auto;
 }
 
-/* Wskaźnik na górze koła */
 .wheel-pointer {
     position: absolute;
     top: -20px;
@@ -142,23 +145,20 @@ body {
     width: 40px;
     height: 40px;
     background: #c5a059;
-    clip-path: polygon(50% 100%, 0 0, 100% 0); /* Tworzy trójkąt */
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
     z-index: 20;
 }
 
-/* Główne koło */
 .wheel {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     border: 8px solid #c5a059;
     position: relative;
-    overflow: hidden; /* Kluczowe dla przycięcia zawartości do okręgu */
+    overflow: hidden;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    /* Tło jest teraz generowane dynamicznie jako conic-gradient w JS */
 }
 
-/* Kontener na ikonę wewnątrz koła. Pozycjonowany absolutnie z JS */
 .wheel-content {
     position: absolute;
     width: 60px;
@@ -169,13 +169,11 @@ body {
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    /* Transformacja (przesunięcie) jest dodawana wprost w stylach elementu przez React */
 }
 
-/* === Animations & Effects === */
+/* --- Feedback Systems --- */
 
-/* Animacja trzęsienia */
-@keyframes shake {
+@keyframes shakeRitual {
     0% { transform: translate(1px, 1px) rotate(0deg); }
     10% { transform: translate(-1px, -2px) rotate(-1deg); }
     20% { transform: translate(-3px, 0px) rotate(1deg); }
@@ -190,10 +188,9 @@ body {
 }
 
 .wheel-shaking {
-    animation: shake 0.5s infinite;
+    animation: shakeRitual 0.5s infinite;
 }
 
-/* Kontener na efekty iskier */
 #sparks-container {
     position: fixed;
     top: 0;
@@ -204,7 +201,6 @@ body {
     z-index: 150;
 }
 
-/* Pojedyncza iskra */
 .spark {
     position: absolute;
     width: 4px;
@@ -216,9 +212,8 @@ body {
     box-shadow: 0 0 10px #c5a059;
 }
 
-/* === Debug Window === */
+/* --- Debug Console Styles --- */
 
-/* Okno do debugowania zmiennych */
 .debug-window {
     position: fixed;
     bottom: 20px;
@@ -227,9 +222,9 @@ body {
     background: rgba(0, 0, 0, 0.85);
     border: 1px solid #c5a059;
     padding: 10px;
-    font-family: 'Courier New', Courier, monospace; /* Czcionka monospaced dla klimatu terminala */
+    font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
-    color: #00ff00; /* Zielony tekst, jak w starych terminalach */
+    color: #00ff00;
     z-index: 1000;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     pointer-events: none;

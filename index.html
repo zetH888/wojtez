@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Security: Basic CSP to restrict sources (Adjust as needed for production) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' unpkg.com cdn.tailwindcss.com cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com cdn.tailwindcss.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' unpkg.com cdn.tailwindcss.com cdn.jsdelivr.net;">
+    
     <title>WH40K Faction Roulette</title>
-    <!-- React & ReactDOM -->
+    
+    <!-- External Dependencies (Loaded via CDN) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Google Fonts -->
+    
+    <!-- Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;700&family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
     
+    <!-- Core Stylesheet -->
     <link rel="stylesheet" href="style.css">
     
     <script>
-        // Framer Motion global mapping
+        /** Global Frame Motion mapping for Babel script usage */
         window.Motion = window.Motion || window.framerMotion;
 
+        /** Tailwind CSS Theme Configuration */
         tailwind.config = {
             theme: {
                 extend: {
@@ -40,15 +43,19 @@
                     }
                 }
             }
-        }
+        };
     </script>
 </head>
-<body>
+<body class="bg-grimdark select-none">
+    <!-- Application Mounting Point -->
     <div id="root"></div>
-    <div class="scanlines"></div>
-    <div class="crt-flicker"></div>
-    <div id="sparks-container"></div>
 
+    <!-- Visual Overlays -->
+    <div class="scanlines" aria-hidden="true"></div>
+    <div class="crt-flicker" aria-hidden="true"></div>
+    <div id="sparks-container" aria-hidden="true"></div>
+
+    <!-- Core Logic (React/Babel) -->
     <script type="text/babel" src="app.js"></script>
 </body>
 </html>
